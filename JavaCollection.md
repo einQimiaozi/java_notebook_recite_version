@@ -24,11 +24,34 @@ transient：使得实现了Serilizable接口的对象中的被修饰属性不可
 
 实现了RandomAccess接口。
 
+支持插入null元素。
+
 复杂度：
 
   - get O(1)
   - add(E) O(1)
-  - add(index E) O(n)
+  - add(index,E) O(n)
   - remove() O(n) 
+
+## LinkedList
+
+底层是双向链表结构，元素节点使用protected和transient修饰。
+
+支持插入null元素。
+
+对其他Collection对象的批量插入采用Collection.toArray方法(遍历，转成Object数组返回)，不断尾插，使用整型size记录链表长度。
+
+尾部追加元素使用尾插法，其他情况下使用头插法(调用node方法，该方法会根据index判断当前插入的位置在链表的前半段还是后半段，遍历返回该位置，因为插入后该位置实际上要后移，所以使用头插法)。
+
+支持按元素查询，会先判断元素是否为null，因为null和普通元素的判断相等的方法不同(==和equals)，判断后根据情况遍历返回第一个满足条件的节点。
+
+不需要扩容，插入删除效率高，查找效率低。
+
+复杂度：
+
+  - get O(n)
+  - add(E) O(1)
+  - add(index,E) O(n/2)
+  - remove O(1)
 
 
