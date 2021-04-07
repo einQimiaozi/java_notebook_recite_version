@@ -56,7 +56,7 @@ transient：使得实现了Serilizable接口的对象中的被修饰属性不可
 
 ## HashMap
 
-底层构造函数是空的Node数组，也叫哈希桶，protected和transient修饰，还有一个加载因子，默认为0.75，Node对象结构如下
+底层构造函数是空的Node数组，也叫哈希桶，protected和transient修饰，还有一个加载因子，默认为0.75，Node对象结构如下(单向链表)
 
 ```java
 static class Node<k,v> implements Map.Entry<k,v> {
@@ -73,6 +73,8 @@ static class Node<k,v> implements Map.Entry<k,v> {
 
 默认容量为16,每次两倍扩容(位运算 int newcapacity = oldcapacity>>1),容量必须为2的n次方，可以指定容量，底层会调用tablesizefor方法返回一个大于并最接近指定容量的容量(使用或+位运算)
 
+当桶内链表长度大于7时转换结构为红黑树，小于7时降级为链表，等于7时不做任何操作
+
 ```java
 static final int tablesizefor(int cap) {
    int n = cap-1;
@@ -84,6 +86,19 @@ static final int tablesizefor(int cap) {
    return (n<0)? |= (n>=MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY = n+1; // 边界检查
 }
 ```
+
+hash桶位置计算方法：元素的hash值模以容量(源码中使用位操作 [e.hash & cap-1]),因此容量必须是2的n次方(这样才能用位操作取模)
+
+扩容过程
+
+  - 1.判断是否要初始化
+  - 2.边界判断(hashmap的容量上限为2^31-1)
+  - 3.计算扩容后容量(位操作)
+  - 4.如果未初始化则执行初始化，如果未初始化但是有threshold，则初始化同时设置当前的容量为threshold
+  - 5.计算新阈值并构建新的hash桶
+  - 6.如果旧hash桶内有元素，则遍历老桶，每次遍历将引用指向null，方便GC
+  - 7.由于每次扩容2倍，所以老桶内元素的下标应该不变or变为[老桶长度+原来的下标]，如果没有hash冲突则在原下标(此时初始化一个链表作为桶内结构)，若发生hash冲突则计算当前hash和老桶的大小，小于则还在原来的位置，大于则在新位置(源码里使用位操作 if((e.hash & oldcap)==0))
+  - 8.使用两个指针记录链表的头尾节点，尾插法插入元素，处理完链表之后放入对应下标
 
 
 
