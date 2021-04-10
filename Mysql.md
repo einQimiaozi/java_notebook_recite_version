@@ -4,6 +4,35 @@
 
 查询缓存在mysql8.0之后被取消，一般认为数据库若不处于静态图状态则查询缓存命中率极低，不建议使用
 
+## 基本数据类型
+
+1.整型
+  - 1.tinyint smalliont,meduimint,int
+  - 2.bigint(用于记录大数)
+
+2.浮点型
+  - 1.float(8字节) double(16字节)
+  - 2.decimal(大数，用于存储货币单位)
+
+3.日期
+  - 1.date，time，year
+  - 2.timestamp(4字节，1970-2038年) datetime(8字节，一般比timestamp好用)
+
+4.varchar
+  - 用于存储可变长字符串，比定长更节省空间
+  - 使用varchar(n)指定长度
+  - 使用1到2个额外的字节记录字符串长度
+  - 由于程度可变，需要update时做额外工作，会影响update效率
+  - 适用场景：
+  - 字符串列长度大于平均长度
+  - 列的更新很少
+  - 使用了像utf-8这样复杂的字符集
+
+5.char
+
+  - 定长
+  - 适合存储短字符串
+
 ## Mysql三大范式
 
 1.数据的每一行不可拆分
@@ -57,3 +86,29 @@ mysql索引采用b+tree结构，叶节点记录数据
   - 1.使用自增主键维护叶节点有序性比每次排序效率更高
   - 2.对于普通索引，内部存储的是主键，所以主键越短，内存消耗越低
 
+## MVCC(多版本并发控制)
+
+![data](https://pcsdata.baidu.com/thumbnail/178077666o2f82b714509d6908289872?fid=1508469986-16051585-270984009239186&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-5qLgy4RCfuDknwcmcCOT39Ud2Ro%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=3210581287&dp-callid=0&time=1618030800&size=c1600_u1600&quality=100&vuk=-&ft=video)
+
+innode数据行结构
+
+DATA_TRX_ID:记录插入或更新的最后一个事务的id
+
+DATA_ROLL_PTR：指向该行对应的回滚段的指针，该行所有的旧版本都在undolog上以链表形式保存，实际上该指针指向的就是这玩意
+
+1.redolog:记录每次提交的操作，结构是一个数据，通过头指针和尾指针维护写入位置，数组满了就刷盘然后清空刷盘成功的数据，指针后移，用于实现crash-safe(前滚操作)，保证持久化，innodb中才存在的日志
+
+2.undo：log：存放数据库修改前的数据，用于回滚操作，innode中才存在的日志，用于保证事务原子性和MVCC实现
+
+mvcc：读不加锁，读写不冲突，适合读多写少的场景，读有两种模式(快照读->返回记录的当前版本，不加锁 当前读->返回记录的最新版本，加锁，保证其他线程不修改)，需要额外空间维护记录
+
+mvcc的实现原理：
+  - 写：事务以排他锁的形式修改数据，把修改的数据放入undolog中，通过DATA_ROLL_PTR关联数据，如果事务提交不成功则回复undolog中的数据(回滚，保证原子性)
+  - 读：根据读模式决定是读数据库当前版本还是读undolog
+
+undo log工作流程：
+  - 1.开始事务
+  - 2.记录数据行快照到undolog
+  - 3.更新数据
+  - 4.将undolog刷盘
+  - 5.提交事务
