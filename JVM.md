@@ -16,7 +16,7 @@ java栈：线程私有，跟随线程一起创建，存放栈帧(可以看作是
 
 JMM是java的一种逻辑内存模型，物理上不存在，jmm和java内存布局的划分不是一个概念，jmm仅仅是一种控制数据访问模式的方式，非要比较的话，jmm的主内存包括了堆和方法区，工作线程则包括了栈，方法栈和程序计数器
 
-![jmm](https://pcsdata.baidu.com/thumbnail/79ee977e7m00915b3e1e750cc751be72?fid=1508469986-16051585-542448575531019&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-nlhivSfNZSmSXRQoI3hnu7eEh00%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=2946059766&dp-callid=0&time=1618070400&size=c1600_u1600&quality=100&vuk=-&ft=video)
+![jmm](https://pcsdata.baidu.com/thumbnail/325601426s6725d837583145b4f470c0?fid=1508469986-16051585-923052660936310&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-%2B4xBMQiNdVzbPE8UViU5KrhIkVQ%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=3790468430&dp-callid=0&time=1618077600&size=c1600_u1600&quality=100&vuk=-&ft=video)
 
 工作线程维护自己的副本变量(具体内容参看jvm布局的内容)，线程间屏蔽，主内存共享(可能会触发线程安全问题)，不允许直接对主内存修改，工作线程需要拷贝一份要修改的变量副本到自己的内存里，修改后回写给主内存
 
