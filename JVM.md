@@ -65,7 +65,7 @@ JMM是java的一种逻辑内存模型，物理上不存在，jmm和java内存布
 
 ## 类加载过程
 
-![process](https://pcsdata.baidu.com/thumbnail/7f8a24eebpa99342234310e3f6f15256?fid=1508469986-16051585-994672685981118&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-6EeurOteH4a3KyyFEmp0ARi2E4A%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=3790468430&dp-callid=0&time=1618077600&size=c1600_u1600&quality=100&vuk=-&ft=video)
+![process](https://pcsdata.baidu.com/thumbnail/7f8a24eebpa99342234310e3f6f15256?fid=1508469986-16051585-994672685981118&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-xD3CeRYfmrz%2BFjAX73VK6Zfd3go%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=537109366&dp-callid=0&time=1618131600&size=c1600_u1600&quality=100&vuk=-&ft=video)
 
 1.加载：通过一个类的类全限定名查找到该类的class字节码文件并加载，根据字节码文件创建该类的Class对象，jvm对class的加载是按需加载，即第一次使用时才会加载
 
@@ -108,7 +108,7 @@ JMM是java的一种逻辑内存模型，物理上不存在，jmm和java内存布
 
 ## 双亲委派模型
 
-![model](https://pcsdata.baidu.com/thumbnail/5e9cad2a3s9591e47a4c7170105244e2?fid=1508469986-16051585-881829052094408&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-iENbyAL5chNyT19Idob0DKvsFu8%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=3790468430&dp-callid=0&time=1618077600&size=c1600_u1600&quality=100&vuk=-&ft=video)
+![model](https://pcsdata.baidu.com/thumbnail/5e9cad2a3s9591e47a4c7170105244e2?fid=1508469986-16051585-881829052094408&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-UCjP0PLw7DyVmoZu%2FRy5ZtnhaWo%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=537109366&dp-callid=0&time=1618131600&size=c1600_u1600&quality=100&vuk=-&ft=video)
 
 在jdk1.2之后引入的一种类加载规则
 
@@ -130,7 +130,7 @@ java中很多服务器提供者接口允许第三方为他们提供实现(JBDC,J
 
 ## 类加载器调用
 
-![classlaoder](https://pcsdata.baidu.com/thumbnail/570b977e5j140cd29522b5c0a1366bd1?fid=1508469986-16051585-902562109188250&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-B6MJfOJaFqWaMSlos9ub4DfVTx8%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=3382704509&dp-callid=0&time=1618117200&size=c1600_u1600&quality=100&vuk=-&ft=video)
+![classlaoder](https://pcsdata.baidu.com/thumbnail/570b977e5j140cd29522b5c0a1366bd1?fid=1508469986-16051585-902562109188250&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-Wb72JpwayR55fjyLXejkNB9ox9k%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=537109366&dp-callid=0&time=1618131600&size=c1600_u1600&quality=100&vuk=-&ft=video)
 
 所有的非启动类加载器都继承自ClassLoader抽象类
 
@@ -242,7 +242,7 @@ GC中需要执行GC同时中断用户线程的行为就叫StopTheWorld，它本�
     - 理由2：为什么是8：1：1？因为根据实验，90%的新生代活不过一轮，所以每次回收占比平均高达90%
   - 6.空间担保：当survive空间不够的时候，除了OOM外，还可以选择设置空间担保策略
 
-    ![space](https://pcsdata.baidu.com/thumbnail/b89f5e006ufa230247503b4866398abc?fid=1508469986-16051585-91808281140211&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-OGFdeN9AsNHoCO2ov%2FtUCRTHn8Q%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=102179349&dp-callid=0&time=1618128000&size=c1600_u1600&quality=100&vuk=-&ft=video)
+    ![space](https://pcsdata.baidu.com/thumbnail/b89f5e006ufa230247503b4866398abc?fid=1508469986-16051585-91808281140211&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-yJSiuczqALHJVYFYH1k6ILbYSWg%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=537109366&dp-callid=0&time=1618131600&size=c1600_u1600&quality=100&vuk=-&ft=video)
     
     - survive的空间不够时检查是否设置了空间担保
     - 如果设置了空间担保，检查每次老年代剩余空间是否大于每次平均从年轻代晋升到老年代的空间大小
