@@ -63,6 +63,101 @@ JMM是java的一种逻辑内存模型，物理上不存在，jmm和java内存布
     - 线程中的所有操作都优先与线程终结检测之前
     - 实例对象的初始化优先与finalize()方法的执行
 
+## 类加载过程
+
+![process](https://pcsdata.baidu.com/thumbnail/7f8a24eebpa99342234310e3f6f15256?fid=1508469986-16051585-994672685981118&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-6EeurOteH4a3KyyFEmp0ARi2E4A%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=3790468430&dp-callid=0&time=1618077600&size=c1600_u1600&quality=100&vuk=-&ft=video)
+
+1.加载：通过一个类的类全限定名查找到该类的class字节码文件并加载，根据字节码文件创建该类的Class对象，jvm对class的加载是按需加载，即第一次使用时才会加载
+
+2.验证：确保class文件包含的信息符合jvm要求
+  - 文件格式验证
+  - 符号引用验证
+  - 字节码验证
+  - 元数据验证
+
+3.准备：对类变量(static)分配默认值，不包括final修饰的变量(编译的时候就已经分配了)，可以理解为分配内存但不初始化
+
+4.解析：将符号引用解析为直接引用，符号引用指对目标的一组描述，可以是指针，偏移量，句柄
+
+5.初始化：对类的静态成员初始化其代码中赋予的值，若该类具有父类，则顺手初始化父类
+
+## 类加载器：
+
+1.启动类加载器：
+  - 加载{JAVA_HOME}/lib下或使用-X bootclasspath指定路径下的class
+  - 非jvm自带，使用c++实现
+  - 出于安全考虑，启动类加载器只加载java.javax.sun开头的类
+  - 无父类加载器
+
+2.扩展类加载器：
+  - jvm自带，java实现。launcher的静态内部类
+  - 加载{JAVA_HOMR}/lin/ext下或系统变量Djava.ext.dir指定路径下的包
+  - 父类加载器为null
+
+3.系统类加载器(应用类加载器)
+  - jvm自带，java实现
+  - 加载系统类路径java -classpath或D java.class指定路径下的类
+  - 应用中默认的类加载器，可以由开发者直接调用并设置
+  - 父类加载器为扩展类加载器
+
+4.自定义类加载器：
+  - 用户编写的类加载器，默认父类加载器为系统类加载器
+
+注意，这里的父类指的不是java的继承关系，而是加载器的优先级
+
+## 双亲委派模型
+
+![model](https://pcsdata.baidu.com/thumbnail/5e9cad2a3s9591e47a4c7170105244e2?fid=1508469986-16051585-881829052094408&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-iENbyAL5chNyT19Idob0DKvsFu8%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=3790468430&dp-callid=0&time=1618077600&size=c1600_u1600&quality=100&vuk=-&ft=video)
+
+在jdk1.2之后引入的一种类加载规则
+
+原理：一个类加载器收到类加载请求后会向上传送，如果上位加载器处理不了才会向下送给下位加载器加载
+
+优势和必要性
+  - 1.防止同一个类被不同的类加载器加载多次，防止核心类被系统类加载器加载后随意修改
+  - 2.java中对类是否相等的判定由类加载器相等+类相等实现
+
+### 双亲委派的破坏和线程上下文类加载器：
+
+java中很多服务器提供者接口允许第三方为他们提供实现(JBDC,JNDI等)，这些接口输入java类核心库，一般存在于lib下，由启动类加载器加载，但是他们的代码实现经常会依赖需要系统类加载器加载的jar包，根据jvm的类加载规则，启动类加载器不能加载这些依赖类，同时由于双亲委派模型的存在，也不能够向下递送这些加载需求
+
+所以需要使用一种叫做线程上文下类加载的classloader来加载这些依赖类，造成双亲委派模型的破坏，线程上下文类加载器属于一种系统类加载器(contextClassLoader)，需要手动获取和设置(getContextClassLoader setContextClassLoader)，如果没有手动设置则会继承父线程的contextClassLoader
+
+为什么不直接通过getSystemClassLoader获取线程上下文类加载器：
+  - 在javaweb环境下使用的线程上下文类加载器并不一定是系统类加载器！！！
+  - 使用getContextClassLoader可以保证获取到的类加载器和当前线程相同，不需要考虑当前服务下的线程上下文类加载器到底是什么
+
+## 类加载器调用
+
+![classlaoder](https://pcsdata.baidu.com/thumbnail/570b977e5j140cd29522b5c0a1366bd1?fid=1508469986-16051585-902562109188250&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-B6MJfOJaFqWaMSlos9ub4DfVTx8%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=3382704509&dp-callid=0&time=1618117200&size=c1600_u1600&quality=100&vuk=-&ft=video)
+
+所有的非启动类加载器都继承自ClassLoader抽象类
+
+1.LoadClass(String):jdk1.2之前用于传入类名加载类的默认方法，因为jdk1.2之后引入了双亲委派模型，所以现在不建议覆盖该方法进行类加载了
+
+2.findClass(String):jdk1.2之后不再建议覆盖LoadClass方法，而是使用findClass方法，该方法需要自己覆盖编写类加载逻辑，如果没有覆写则会抛出异常
+
+3.defineClass(byte[],int,int):将byte字节解析成jvm能够识别的Class对象，即使用字节流生成Class对象(只生成，不解析)，一般作为findClass的返回值
+
+```java
+public class<?> findClass(String name) throws ClassNotFoundException {
+  // 获取字节流
+  byte[] classData = getClassData(name);
+  if(classData==null) throw new ClassNotFoundException;
+  else {
+    // 需要传入起始位置和偏移量
+    return defineClass(classData,0,classData.length);
+  }
+}
+```
+
+4.resolveClass:将创建好的Class对象解析
+
+5.urlClassLoader：该方法会使用一个UrlClassPath类对象，通过该对象找到要加载的字节流，通过defindClass方法生成class对象，整个过程自动加载，只需要传入字节码位置，不需要覆写findClass
+
+6.UrlClassPath：根据传入的字节流文件地址返回该字节码的位置，包含了FileLoader和jarLoader两个class，用于自动判断并返回文件字节码和jar包字节码
+
+
 
 
 
