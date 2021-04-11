@@ -102,6 +102,7 @@ JMM是java的一种逻辑内存模型，物理上不存在，jmm和java内存布
 
 4.自定义类加载器：
   - 用户编写的类加载器，默认父类加载器为系统类加载器
+  - 实现的时候需要继承ClasLoader或UrlClassLoader类，具体用哪个看下面
 
 注意，这里的父类指的不是java的继承关系，而是加载器的优先级
 
@@ -156,6 +157,28 @@ public class<?> findClass(String name) throws ClassNotFoundException {
 5.urlClassLoader：该方法会使用一个UrlClassPath类对象，通过该对象找到要加载的字节流，通过defindClass方法生成class对象，整个过程自动加载，只需要传入字节码位置，不需要覆写findClass
 
 6.UrlClassPath：根据传入的字节流文件地址返回该字节码的位置，包含了FileLoader和jarLoader两个class，用于自动判断并返回文件字节码和jar包字节码
+
+以下三种情况不能使用UrlClassLoader，需要手动编写加载逻辑
+  - 1.class文件不在系统类加载器能加载的路径范围内
+  - 2.class文件通过网络传输并且需要加密
+  - 3.需要实现热部署，class文件需要通过不同的类加载器产生不同的对象
+
+### 类加载缓存问题
+
+不同类加载器加载的同一个类不相等是因为类名称空间不同
+
+在loadClass方法的源码中，类全限定名的查找是通过缓存查找，也就是说第一次加载的结果决定了之后所有加载的结果，如果加载出现错误，需要绕过缓存查询才能正确的重新加载class对象，也可以直接通过findClass方法查找
+
+### 显示加载和隐式加载
+
+显式加载：在代码中他哦难过调用ClassLoader加载class对象
+  - this.getClass().getClasLoader.loadClass()
+  - Class.Forname(String name):通过名称加载(找不到抛错误)
+ 
+隐式加载：通过虚拟机自动加载，该机制在加载某个class时自动加载该class的其他依赖class
+
+开发时通常两种方法混用
+
 
 
 
