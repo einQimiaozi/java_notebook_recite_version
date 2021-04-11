@@ -254,13 +254,22 @@ GC中需要执行GC同时中断用户线程的行为就叫StopTheWorld，它本�
 
 ### 分代收集算法
 
-根据对象的生命周期，对象被划分为老年代和年轻代(两块内存，eden和survive都属于年轻代)，每次GC少量存活的年轻代熬过n轮后会进入老年代
+根据对象的生命周期，对象被划分为老年代和年轻代(两块内存，eden和survive都属于年轻代
 
 年轻代对象存活率低，一般使用标记复制算法
 
 老年代对象存活率高，一般使用标记整理或标记清除算法
 
-也正因此，young GC的速度一般比Old GC要快(因为需要移动处理的对象少，所以快，并且使用复制也不会消耗太多性能)
+进入老年代的条件：
+  - 每次GC少量存活的年轻代熬过n轮后会进入老年代，如果survive区年龄为x的对象大小的总和>survive空间的一半，则n = x
+  - 如果设置了-XX:MaxTenurigThreshold=y，则n=y
+  - 大对象直接进入老年代，通过-XX：PretenureSizeThreshold设置
+
+Young GC/Minor GC：对年轻代的GC，eden满了就触发，速度快
+
+Old GC/Major GC：对老年代的GC，老年代空间已满且，调用System.gc()手动触发或 未设置空间担保/空间担保失效 会触发，速度慢但触发频率一般也低
+
+Full GC：全内存的GC，而由于Old GC之前必然会触发Young GC，所以Full GC本质上和Old GC一样
 
 ### 垃圾回收器
 
@@ -273,6 +282,15 @@ GC中需要执行GC同时中断用户线程的行为就叫StopTheWorld，它本�
 | Parallel Old | X | O | O | X | X | O | O |
 | CMS | X | O | O | O | X | X | O |
 | G1 | O | O | O | X | O | X | O |
+
+Paralled收集器的目标并不是单词快速GC，而是保证最大吞吐量(总时长较少即可)
+
+CMS：
+  - 执行流程
+    - 初始标记：STW，查找GC Roots和其直接子节点
+    - 并发标记：No STW，标记所有节点
+    - 重新标记：STW，修正并发标记阶段的引用关系变化，使用通过写屏障实现的增量更新算法
+    - 并发清除：No STW
 
 
 
