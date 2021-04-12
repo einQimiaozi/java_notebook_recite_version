@@ -1,3 +1,7 @@
+## 开篇---记忆导图
+
+![image](https://pcsdata.baidu.com/thumbnail/80a983679qab9a841faf872d125bd456?fid=1508469986-16051585-1038981417570548&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-W%2FOE75s9JsnpZWu%2BWzV0rdWiE1Y%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=893604980&dp-callid=0&time=1618221600&size=c1600_u1600&quality=100&vuk=-&ft=video)
+
 ## jvm内存布局
 
 ![memoryarch](https://pcsdata.baidu.com/thumbnail/325601426s6725d837583145b4f470c0?fid=1508469986-16051585-923052660936310&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-%2B4xBMQiNdVzbPE8UViU5KrhIkVQ%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=3790468430&dp-callid=0&time=1618077600&size=c1600_u1600&quality=100&vuk=-&ft=video)
