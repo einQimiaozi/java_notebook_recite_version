@@ -291,19 +291,16 @@ CMS：
     - 并发标记：No STW，标记所有节点
     - 重新标记：STW，修正并发标记阶段的引用关系变化，使用通过写屏障实现的增量更新算法
     - 并发清除：No STW
+  - 目标：获取最短停顿时间
+  - 优点：并发，低停顿
+  - 缺点：不能处理浮动垃圾，内存会产生碎片，对cpu资源敏感
 
+G1：
+  - 内存划分：
 
-
+  ![region](https://pcsdata.baidu.com/thumbnail/45620d0acn130c31815d2575247f4527?fid=1508469986-16051585-344099920392898&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-aaisbelHdhQcf30EqQoVquCrS0o%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=563377960&dp-callid=0&time=1618218000&size=c1600_u1600&quality=100&vuk=-&ft=video)
   
-
-
-
-
-
-
-
+  每个region是一块连续的虚拟内存，而region之间不连续，逻辑上依然有老年代和新生代的概念，但内存上不再划分，另外较大的对象会被放入大对象区域(对象的大小超过一个region的一半就算大对象)，大对象的回收参考老年代
   
- 
-
-
-
+  - 执行流程
+    - 初始标记：STW，查找GC Roots和其直接子节点
