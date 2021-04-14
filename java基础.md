@@ -122,4 +122,81 @@ javabean是一种用于传递数据的特殊类，成员由private修饰，通�
   
   - Class.newInstace()方法可以通过反射获取到的class对象来创建一个实例，但要求该Class必须有空的构造函数
   - 使用Class对象获取指定的Constructor对象(一个可以构造类的东西)，再调用Constructor对象的newInstance方法就可以选定创建实例的构造方法，不需要必须有空的构造函数了
+
+## 代理
+
+代理主要负责对委托类进行增强，包括过滤消息，转发消息给委托类，事后处理消息等，一般调用委托类的方法而不是自己重新实现一遍，只实现增强部分
+
+### 静态代理
+
+1.编译期确定，需要针对委托类编写代理类，实现委托类的增强
+
+2.程序运行前，代理类的class字节码文件就存在
+
+### jdk动态代理
+
+1.运行时确定，使用反射实现，要求委托类必须是一个接口的实现类，不需要编写重复的代码
+
+2.没有class字节码(因为运行时动态生成，程序结束的话代理类就不存在了)
+
+3.原理：通过委托类的接口确定委托类的结构(这就是为什么委托类必须是接口的实现类)，根据该接口的Class对象反射创建代理类
+
+4.核心方法
+  - 动态代理的关键在于两个类:Proxy和InvocationHandler
+  - InvocationHandler：代理类的方法调用会经过该接口，每个代理对象实例都会绑定一个Handler，通过该接口的invoke方法调用委托类的方法并执行方法前后的增强逻辑
+  - Proxy：通过该类生成一个继承该类并实现委托类接口的代理对象，该代理对象的方法调用会被InvocationHandler拦截并转发给委托类调用
+
+  ```java
+  // 委托类接口
+  public interface UserInfoImplements {
+    public String getName(int id);
+    public int getAge(int id);
+  }
+  
+  // 委托类实现
+  public class UserInfo implements UserInfoImplements {
+    public UserInfo(){}
+    @Override
+    public String getName(int id) {
+      if(id==1) return "John";
+      if(id==2) return "Jack";
+    }
+    @Override
+    public int getAge(int id) {
+      if(id==1) return 18;
+      if(id==2) return 23;
+    }
+  }
+  
+  // 定义InvocationHandler
+  class MyInvocation implements InvocationHandler {
+    private Object obj;
+    public MyInvocation(Object obj) {
+      this.obj = obj;
+    }
+    // 重点
+    @Override
+    public Object invoke(Object proxy,Method method,Object[] args) throws Threadable{
+      // 使用method对象调用委托类的方法getName
+      if(method.getName().equlas("getName")) {
+        // 前增强逻辑 
+        System.out.println("before getName!!!");
+        // 参数为委托对象和该对象对应方法的参数数组
+        Object res = method.invoke(obj,args);
+        // 后增强逻辑
+        System.out.println("after getName!!!");
+      }
+      // 调用getAge (这里因为只有两个方法所以我就简写了，实际上最好再做个name的判断)
+      else {
+        // 前增强逻辑 
+        System.out.println("before getAge!!!");
+        // 参数为委托对象和该对象对应方法的参数数组
+        int res = (int)method.invoke(obj,args);
+        System.out.println(res+1);
+        // 后增强逻辑
+        System.out.println("after getAge!!!");
+      }
+    }
+  }
+  ```
   
