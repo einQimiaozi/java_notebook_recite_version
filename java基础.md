@@ -26,6 +26,12 @@
 
 3.创建：直接初始化会从String pool中取，如果没有的话则会创建一个Stirng对象，并将其缓存入String pool中，String pool使用堆中内存，本质上一个new String可能会创建两份副本
 
+  | 类型 | 可变性 | 线程安全 |
+  | :---: | :---: | :---: |
+  | String | 不可变 | 安全 |
+  | StringBuffer | 可变 | 安全，使用synchronized同步 |
+  | StringBuilder | 可变 | 不安全 |
+
 ## 基本数据类型
 
   | 类型 | 大小 | 取值范围 | 包装器 |
