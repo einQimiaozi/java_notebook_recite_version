@@ -223,4 +223,17 @@ javabean是一种用于传递数据的特殊类，成员由private修饰，通�
   - static和final方法描述的方法不能被代理
   - 会默认继承委托对象的所有Object的方法(比如finallize，equals，toString等)
   - 提供了回调函数设计，可以使得拦截器的编码更加灵活
+
+## 注解
+
+1.注解用于说明某个类或方法
+
+2.注解的三角关系：定义注解，使用注解，读取注解
+
+3.注解本质是一个Annotation的接口的接口(有点绕)，类名为@interface
+
+4.注解的原理
+  - 使用动态代理+反射实现@interface接口，得到代理类对象Proxy1(源码里就叫这个名字)
+  - AnnotationInvokeHandler：这是一个针对于处理注解的Handler接口，实现该接口后将其实例传给注解
+  - 编译器会在编译期检查注解是否合法，当进行反射获取Proxy1时，jvm会将所有还活着的注解取出放到一个map中（例如：@Hello（value = "hello"）），然后创建一个AnnotationInvocationHandler 实例，把这个map传递给它，之后创建Proxy1对象实例并返回(由于是动态代理，所以对注解这个委托类接口的方法调用也会由代理类经过invoke方法进行转发和拦截，我们应当关注invoke方法中的实现逻辑来实现注解的功能)，总结：注解本质上就是一个代理类
   
