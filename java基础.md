@@ -200,3 +200,27 @@ javabean是一种用于传递数据的特殊类，成员由private修饰，通�
   }
   ```
   
+5.源码分析
+  - invoke：定义增强逻辑
+  - newProxyInstance(ClassLoader loader,Class<?>[] interface,InvocationHandler h)：该方法是Proxy类的静态方法。通过类加载器保证代理对象和委托类被同一类加载器加载，interface用于定义代理类实现增强的方法，h用于定义代理类的增强逻辑
+  - ProxyClassFactory工厂：通过Class的字节码加载代理类(这个字节码不会保存在磁盘里，通过sun包的ProxyGenerator类动态生成)
+  - 小结：Proxy通过ProxyGenerator生成代理对象的字节码并加载生成Class对象，通过反射创建代理类的实例
+
+### cglib代理
+
+1.解决了jdk动态代理的委托类必须实现接口的问题，原理是对委托类生成一个子类，并覆盖其方法实现增强，所以不能对final修饰的类进行代理，底层使用ASM字节码生成框架生成代理类，比java反射创建代理类效率更高，需要引入cglib.jar和asm.jar两个包，使用只需要一个参数和一个回调函数，进入毁掉函数后和jdk代理一样通过拦截执行增强
+
+2.核心方法
+  - MethodInterceptor接口：用于拦截代理类调用委托类的方法
+  - intercept(Object Proxy,Method method,Object[] args,MethodProxy methodproxy)
+    - proxy：代理实例
+    - method：委托类要被调用的方法
+    - args：方法参数数组
+    - methodProxy：代理类对方法的代理引用
+
+3.cglib总结
+  - 可以传入接口也可以传入类作为委托对象，接口用实现代理，类用继承代理
+  - static和final方法描述的方法不能被代理
+  - 会默认继承委托对象的所有Object的方法(比如finallize，equals，toString等)
+  - 提供了回调函数设计，可以使得拦截器的编码更加灵活
+  
