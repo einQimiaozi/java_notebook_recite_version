@@ -55,7 +55,7 @@ springBean就是spring容器生产的产品
   - 销毁：若bean实现了DispostibleBean接口，则会调用destory方法，类似于c++里的析构函数
   
 3.BeanDefinition
-  - 作用：用于对bean进行描述
+  - 作用：用于对bean进行描述，BeanDefinition和BeanFactory一样也是个顶层接口，下面有很多具体的实现类
   
   ```java
   public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
@@ -121,3 +121,5 @@ springBean就是spring容器生产的产品
       ...
   }
   ```
+  
+  
