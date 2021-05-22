@@ -45,7 +45,7 @@ BeanDefinition是对Bean对象的描述，spring根据BeanDefinition才能创建
 
 ## BeanFactory
 
-spring容器之一，用来生产bean，是一个顶层接口，下面有很多具体的接口，用于做功能增强
+spring容器之一，用来生产bean，是一个顶层接口，下面有很多具体的接口，用于做功能增强，BeanFactory也是其他spring容器的爹
 
 BeanDefinition 被读取---> BeadFactory 创建---> Bean对象
 
@@ -116,6 +116,8 @@ BeanDefinition 被读取---> BeadFactory 创建---> Bean对象
   
 ## 单例池
 
+spring容器之一
+
 单例池是用于实现单例Bean的，这里的单例Bean指的是一个Bean在创建后每次getBean时都获得的是这个Bean，而不是指一个Bean所属的Class对象只有它一个实例
 
 单例池底层通过concurrentHashmap实现，key为String，value为Bean对象(Object类型)
@@ -156,6 +158,7 @@ springBean就是spring容器生产的产品
     - 若bean实现了InitializingBean接口，则spring将调用afterpropertie方法执行初始化(相当于构造方法，就是xml配置中的init-method)，这个初始化是在属性赋值后执行的！！！
     - 后置处理，这次调用的是PostProcessAfterInitialization
   - 初始化后bean将和applicationContext绑定，applicationContext销毁后bean也销毁
+  - 如果这里使用了AOP，则返回的是代理对象，否则返回的就是初始化后的Bean
   - 销毁：若bean实现了DispostibleBean接口，则会调用destory方法，类似于c++里的析构函数
   
 3.推断构造方法
@@ -171,7 +174,7 @@ springBean就是spring容器生产的产品
   - 如果都不是，就会返回 null(即只有无参构造方法或有其他有参构造方法但是都没有自动注入)
   
 4.springBean，javaBean和对象的区别
-  - 首先springBean和javaBean都是Bean，Bean本身也是一种对象，所以对于相同Class对象的实例对象，Bean和对象本质没有区别，不同Class对象的话，一定要说区别就是Bean有一套自己的对象定义规则，并且根据spring的配置(注解之类的)可以实现自动赋值，而对象没有
+  - 首先springBean和javaBean都是Bean，Bean本身也是一种对象，区别在于Bean有一套自己的对象定义规则，并且根据spring的配置(注解之类的)可以实现自动赋值，而对象没有，所以Bean肯定是对象，对象不一定是Bean，但他们的本质相同
   - SpringBean和javaBean的最大区别在于javaBean必须按照Bean的定义规则编写，而SpringBean只要在配置文件中声明，则不一定要按照Bean的定义规则编写，一个不含任何方法和成员的对象也可以是springBean
   
 5.Bean的定义方式
@@ -179,6 +182,16 @@ springBean就是spring容器生产的产品
   - @Bean，通过定义Config类，加载该类的class对象，@Bean加在方法上，使用annotationConfig上下文管理器，声明式
   - @Component，通过在xml文件里定义component-scan扫描的对应路径中的所有@Component标志的类，当然也可以使用@ComponentScan("path")这种注解方法定义被扫描路径，声明式
   - 通过BeanDefinition实现类的对象定义Bean，将配置好的Beandefinition对象注册到上下文管理器中，编程式，注意，前三种方式本质上是基于BeanDefinition实现的，该方法也是上下文管理器的registerBean方法的底层实现(该方法允许直接将一个class注册成一个bean)
+  
+## ApplicationContext
+  
+ApplicationContext就是前面说的下上文管理器，也是一种spring容器
+  
+ApplicationContext继承了BeanFactory的所有加强接口(注意不是直接继承BeanFactory)，所以它可以使用很多增强功能(国家化，父类BeanFactory之类的)
+  
+ApplicationContext本身也是一个接口，有很多实现类，可以根据不同的场景使用，比如加载相对路径的xml和绝对路径的xml或者使用Config配置方式
+  
+ApplicationContext支持热部署，一部分实现类可以使用refresh方法对容器进行刷新，即重新创建Bean容器，这样做的结果就是某些单例Bean也会被刷新，导致刷新前后的单例Bean并不在是同一个对象，如果你在刷新前后修改了xml配置文件中某个bean的id，那么有可能出现刷新后获取不到之前的id而报错的情况
   
   
   
