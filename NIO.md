@@ -77,3 +77,42 @@ LT：当读写事件未全部完成时，每次epoll_wait都会返回通知，�
 
 ET：当读写事件未全部完成时，只有第一次epoll_wait会返回通知，之后如果没有新的读写事件到来，则不会再次通知，会提高关心fd的效率，但可能造成读写事件无法全部执行完毕
 
+## Reactor
+
+reactor是一种类似nio的设计模式，分为单线程单reactor，多线程单reactor，多线程多reactor
+
+1.单线程单reactor
+
+[1](https://pic3.zhimg.com/80/v2-bbb065565f6e53aa35b722d0fed9e9d2_720w.jpg)
+
+Reactor用于处理socket，连接请求交给Accptor，io请求交给多个Handler
+
+缺点：由于Handler是单线程，一旦一个Handler阻塞，后续其他Handler就都会阻塞
+
+2.多线程单reactor
+
+[2](https://pic2.zhimg.com/80/v2-e85e1cef0b6908ae13f84b76e81f1d85_720w.jpg)
+
+使用线程池多线程处理多个读写请求替换Handler单线程处理，由reactor统一处理socket回写，这个和nio就比较相似了，而且使用多线程的话性能还好点，解决了Handler阻塞的问题
+
+缺点：socket的io仍然由一个reactor单线程处理，短时间内高并发抗不住
+
+3.多线程多reactor
+
+[3](https://pic3.zhimg.com/80/v2-477021613f3539fe3d1b5023fc7974be_720w.jpg)
+
+reactor的io和连接分离，mainireactor专门处理连接，将连接建立的socketChannel注册到subreactor上，subreactor根据socketChannel进行读写分离，其他交给线程池处理
+
+## Netty
+
+Netty是一个异步事件驱动的网络应用程序框架，用于快速开发可维护的高性能协议服务器和客户端，结构类似多线程多Reacotor
+
+[netty](https://pic4.zhimg.com/80/v2-7eefba893a65706eb6bbe4115cbd0b83_720w.jpg)
+
+1.NioEventGroup:一个轮询事件状态并处理的nio，每个NioEventGroup就是一个线程，Selector就是nio里的那个，TaskQeueu是一个异步队列，selector如果某个任务阻塞，就放入taskqueue中防止selector不能继续轮询
+
+2.BossGroup：等同于mainReactor，本质是个线程池，里面有多个NioEventGroup
+
+3.WorkerGroup：等同于subReactor，本质也是个线程池，NioEventGroup会把就绪的事件分发给pipeline，pipeline再顺序进行Handler处理
+
+4.NioEventLoop：相当与一个本地java线程的抽象，用于实际
