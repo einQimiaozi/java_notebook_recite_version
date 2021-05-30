@@ -122,6 +122,18 @@ b+树结构 层高:2-4  子节点数量：每个父节点下带该1200个 查询
 
 索引的存储：索引如果在内存中，它所在的page会被存放在一个叫buffer pool的地方，用于快速读取
 
+## chang Buffer
+
+1.概念：一个记录修改操作的Buffer，位置在Buffer Pool中，需要单独内存空间维护，默认是占buffer pool的50%大小，可以调整，上限最大不能超过buffer pool
+
+2.作用：每次修改数据时如果待修改数据不在Buffer Pool中，则将修改命令写入change Buffer后结束即可，当下次访问该数据时将change Buffer中的命令一次性执行，减少磁盘IO，用空间换时间
+
+3.不能使用的情况：
+  - 原则：如果buffer pool中已经确定存在的数据，使用change buffer就没意义了
+  - 原因：change buffer解决的是磁盘io和内存速度的差异过大的问题，所以如果不存在磁盘io这一步，那么change buffer不光无法加速，还会占用内存空间
+  - 常见情况：主键索引和唯一索引，因为这两种索引需要将数据读入内存判断是否有重复，所以不需要使用change buffer，而普通索引使用change buffer会效果拔群
+
+
 ## MVCC(多版本并发控制)
 
 ![data](https://pcsdata.baidu.com/thumbnail/178077666o2f82b714509d6908289872?fid=1508469986-16051585-270984009239186&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-5qLgy4RCfuDknwcmcCOT39Ud2Ro%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=3210581287&dp-callid=0&time=1618030800&size=c1600_u1600&quality=100&vuk=-&ft=video)
