@@ -222,7 +222,105 @@ applicationContext配置文件
     <bean id="userAction" class="com.Qimiaozi.UserAction" scope="prototype"></bean>
 </beans>
 ```
+
+Dao类
   
+```java
+package com.Qimiaozi;
+
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class UserDao {
+
+    private String version;
+
+    public UserDao(String version) {
+        System.out.println("当前数据库版本:"+version);
+        this.version = version;
+    }
+    public void save(String userInfo) {
+        System.out.println("信息成功保存 : "+userInfo);
+    }
+}
+```
+  
+Service类
+  
+```
+package com.Qimiaozi;
+
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import javax.annotation.Resource;
+
+@Service
+public class UserService {
+
+    // @Resource(name = "userDao") 注解配置方法，也可以在xml里直接使用属性标签+set方法配置
+    private UserDao userDao;
+
+    public void setUserDao(UserDao userDao) {
+        System.out.println("使用标签配置，未使用注解");
+        this.userDao = userDao;
+    }
+
+    public void save(String userInfo) {
+        System.out.println("服务启动，信息保存中.....");
+        userDao.save(userInfo);
+    }
+}
+```
+  
+Controller类
+
+```java
+package com.Qimiaozi;
+
+import org.springframework.stereotype.Controller;
+
+import javax.annotation.Resource;
+
+@Controller
+public class UserAction {
+
+    @Resource(name = "userService")
+    private UserService userService;
+
+    public void execute(String userInfo) {
+        userService.save(userInfo);
+    }
+}
+```
+  
+测试
+  
+```java
+package com.QimiaoziTest;
+
+import com.Qimiaozi.UserAction;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class TestDemo1 {
+    public static void main(String[] args) {
+        ApplicationContext ac = new ClassPathXmlApplicationContext("applicationContext.xml");
+        UserAction action = (UserAction) ac.getBean("userAction");
+        action.execute("name:jack age:18");
+    }
+}
+```
+  
+运行结果
+  
+```
+当前数据库版本:1.0.0
+使用标签配置，未使用注解
+服务启动，信息保存中.....
+信息成功保存 : name:jack age:18
+
+Process finished with exit code 0
+```
   
   
   
