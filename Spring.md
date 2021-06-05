@@ -29,7 +29,7 @@ maven的基本工作单元，maven通过读取dom获取所需要的配置信息�
 2.ioc控制反转：将对象的创建交给spring处理，不需要手动new，是一种面向对象设计原则，降低系统耦合度
   - 大致原理：使用反射根据注解或xml配置文件信息获取Class对象，动态创建对象实例(可以是单例也可以是多个不同对象)
 
-3.DI依赖注入：用于查找清单中对象的依赖，比如a对象创建依赖b和c，那么会提前创建好b和c对象然后注入给a对象(a对象创建前是不知道其他对象是否存在或，在哪里以及他们如何创建，完全依靠dI被动注入)
+3.DI依赖注入：用于查找清单中对象的依赖，比如a对象创建依赖b和c，那么会提前创建好b和c对象然后注入给a对象(a对象创建前是不知道其他对象是否存在或，在哪里以及他们如何创建，完全依靠dI被动注入),dDI是ioc的一种实现方法
 
 ## BeanDefinition
 
@@ -137,7 +137,7 @@ FactoryBean在创建Bean实例时会同时创建两个对象，一个是getObjec
 
 ## springBean
 
-springBean就是spring容器生产的产品
+springBean就是spring容器生产的产品，只有被spring管理的对象，才可以叫做springBean
 
 1.用法：
   - 使用<bean id="..." class="..." / >定义
@@ -147,7 +147,9 @@ springBean就是spring容器生产的产品
 2.Bean的生命周期：
   - 创建BeanDefinition对象
   - 推断构造方法(细节多，下面说)
+  - 实例化前，一段钩子函数，可以做实例化前的准备处理，返回值会被实例化接收，需要返回实例化时和bean对象相同的类型，否则会报错
   - 实例化: instanceWrapper = this.createBeanInstance(beanName, mbd, args);
+  - 实例化后，一段钩子函数，可以做实例化后的后续处理
   - 属性赋值: this.populateBean(beanName, mbd, instanceWrapper);
   - 初始化：exposedObject = this.initializeBean(beanName, exposedObject, mbd);
     - 检查aware接口：aware接口能够让bean感知到自己在spring容器中的各种属性
@@ -187,11 +189,40 @@ springBean就是spring容器生产的产品
   
 ApplicationContext就是前面说的下上文管理器，也是一种spring容器
   
-ApplicationContext继承了BeanFactory的所有加强接口(注意不是直接继承BeanFactory)，所以它可以使用很多增强功能(国家化，父类BeanFactory之类的)
+ApplicationContext继承了BeanFactory的所有加强接口(注意不是直接继承BeanFactory)，所以它可以使用很多增强功能(国家化，父类BeanFactory之类的)，如果不是在极端情况下需要节约性能消耗，一般优先选择ApplicationContext
   
 ApplicationContext本身也是一个接口，有很多实现类，可以根据不同的场景使用，比如加载相对路径的xml和绝对路径的xml或者使用Config配置方式
   
 ApplicationContext支持热部署，一部分实现类可以使用refresh方法对容器进行刷新，即重新创建Bean容器，这样做的结果就是某些单例Bean也会被刷新，导致刷新前后的单例Bean并不在是同一个对象，如果你在刷新前后修改了xml配置文件中某个bean的id，那么有可能出现刷新后获取不到之前的id而报错的情况
+  
+案例，部署一个自定义的简单MVC结构，包含Dao，Service，Controller
+  
+applicationContext配置文件
+  
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.2.xsd">
+    <!--开启注解扫描-->
+    <context:component-scan base-package="com.Qimiaozi"></context:component-scan>
+    <bean id="userDao" class="com.Qimiaozi.UserDao" scope="singleton">
+        <!--通过constructor这个节点来指定构造函数的参数类型、名称、第几个-->
+        <constructor-arg index="0" name="version" type="java.lang.String" value="1.0.0"></constructor-arg>
+    </bean>
+    <bean id="userService" class="com.Qimiaozi.UserService" scope="singleton">
+        <property name="userDao">
+            <ref bean="userDao"/>
+        </property>
+    </bean>
+    <bean id="userAction" class="com.Qimiaozi.UserAction" scope="prototype"></bean>
+</beans>
+```
+  
   
   
   
