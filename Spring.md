@@ -27,9 +27,13 @@ maven的基本工作单元，maven通过读取dom获取所需要的配置信息�
 1.ioc容器：用于管理对象的实例化，初始化，对象和对象之间的依赖关系配置，销毁，对象的查找等功能，控制对象的生命周期，ioc控制反转实现的前提，通过程序启动时提供的清单创建清单内的对象和其依赖关系，抽象的说spring就是一个大型工厂，容器就是生产线，ioc容器有很多种，最基本的就是BeanFactory，它是一个顶层接口，有各种实现类(list,hierarchical之类的)
 
 2.ioc控制反转：将对象的创建交给spring处理，不需要手动new，是一种面向对象设计原则，降低系统耦合度
-  - 大致原理：使用反射根据注解或xml配置文件信息获取Class对象，动态创建对象实例(可以是单例也可以是多个不同对象)
 
 3.DI依赖注入：用于查找清单中对象的依赖，比如a对象创建依赖b和c，那么会提前创建好b和c对象然后注入给a对象(a对象创建前是不知道其他对象是否存在或，在哪里以及他们如何创建，完全依靠dI被动注入),DI是ioc的一种实现方法
+
+4.实现原理：
+  - 根据Bean配置信息在容器内部创建Bean定义注册表
+  - 根据注册表加载、实例化bean、建立Bean与Bean之间的依赖关系(这一步依靠反射实现)
+  - 将这些准备就绪的Bean放到Map缓存池中，等待应用程序调用
 
 ## BeanDefinition
 
@@ -47,7 +51,7 @@ BeanDefinition是对Bean对象的描述，spring根据BeanDefinition才能创建
 
 spring容器之一，用来生产bean，是一个顶层接口，下面有很多具体的接口，用于做功能增强，BeanFactory也是其他spring容器的爹
 
-BeanDefinition 被读取---> BeadFactory 创建---> Bean对象
+BeanDefinition被读取 ---> BeadFactory创建 ---> BeanFatory注册 ---> 容器扫描被注册的BeanFatory ---> 实例化Bean对象并进行属性赋值
 
   ```java
   public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
@@ -120,7 +124,7 @@ spring容器之一
 
 单例池是用于实现单例Bean的，这里的单例Bean指的是一个Bean在创建后每次getBean时都获得的是这个Bean，而不是指一个Bean所属的Class对象只有它一个实例
 
-单例池底层通过concurrentHashmap实现，key为String，value为Bean对象(Object类型)
+单例池底层通过concurrentHashmap实现，key为String类型，是该实例的BeanName，value为Bean对象(Object类型)
 
 单例池属于BeanFactory的一部分
 
@@ -151,7 +155,7 @@ springBean就是spring容器生产的产品，只有被spring管理的对象，�
   - 实例化: instanceWrapper = this.createBeanInstance(beanName, mbd, args);
   - 实例化后，一段钩子函数，可以做实例化后的后续处理
   - 属性赋值: this.populateBean(beanName, mbd, instanceWrapper);
-  - 初始化：exposedObject = this.initializeBean(beanName, exposedObject, mbd);
+  - 初始化：exposedObject = this.initializeBean(beanName, exposedObject, mbd);(这部分背不下来就算了，反正我背不下来)
     - 检查aware接口：aware接口能够让bean感知到自己在spring容器中的各种属性
     - 若bean实现了BeNameAware接口，spring将bean的id传给setBeanName方法，这里就是bean对spring容器进行aware的体现了
     - 若bean实现了BeanFactoryAware接口，spring调用setBeanFactory方法将BeanFactory的实现类实例注入给bean(这里的BeanFactory需要自己传入参数指定)
@@ -159,8 +163,9 @@ springBean就是spring容器生产的产品，只有被spring管理的对象，�
     - 若bean实现了BeanPostPrecess接口，则spring将调用PostProcessBeforeInitialization方法执行实例创建成功后的前置增强(后面还有个后置处理)
     - 若bean实现了InitializingBean接口，则spring将调用afterpropertie方法执行初始化(相当于构造方法，就是xml配置中的init-method)，这个初始化是在属性赋值后执行的！！！
     - 后置处理，这次调用的是PostProcessAfterInitialization
-  - 初始化后bean将和applicationContext绑定，applicationContext销毁后bean也销毁
+  - 初始化后bean将和applicationContext绑定，applicationContext销毁后bean也销毁，如果使用的是其他BeanFactory，就绑定其他BeanFactory
   - 如果这里使用了AOP，则返回的是代理对象，否则返回的就是初始化后的Bean
+  - 如果是单例，从单例池中取，如果是原型，则直接将Bean交给调用者
   - 销毁：若bean实现了DispostibleBean接口，则会调用destory方法，类似于c++里的析构函数
   
 3.推断构造方法
@@ -224,7 +229,7 @@ applicationContext配置文件
 ```
 
 Dao类
-  
+  java
 ```java
 package com.Qimiaozi;
 
@@ -247,7 +252,7 @@ public class UserDao {
   
 Service类
   
-```
+```java
 package com.Qimiaozi;
 
 import org.springframework.stereotype.Component;
@@ -321,6 +326,12 @@ public class TestDemo1 {
 
 Process finished with exit code 0
 ```
+  
+ApplicationContext和BeanFactory的区别
+  - ApplicationContext会自动注册后置处理器方法，BeanFactory需要手动ddBeanPostProcessor()注册
+  - ApplicationContext的singleton是预先实例化的，BeanFactory在第一次访问时才实例化
+  
+
   
   
   
