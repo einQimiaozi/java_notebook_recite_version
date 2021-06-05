@@ -382,6 +382,36 @@ ApplicationContext和BeanFactory的区别
 8.@ComponentScan(url)：指定扫描某个路径下的全部package中符合条件的Bean，相当与<context:component-scan/>标签
   
 9@import(xxx.class)：该注解会把指定的@Configuration的class导入当前类，使得当前类可以使用xxx.class中全部定义的@Bean，并且加载时机跟随当前类，如果xxx。class不是@Configuration，则会在当前类被处理时，将xxx.class自动注册为一个Bean
+  
+## AOP
+
+AOP：面向切面编程，将需要重复使用的代码在程序运行是从一个切点动态的插入到程序中，这类代码也叫切面类代码，用于将可重复使用的代码和业务代码分离，降低系统耦合读，增加代码重复利用
+  
+连接点(Join point)：能够被拦截的地方：Spring AOP是基于动态代理的，所以是方法拦截的。每个成员方法都可以称之为连接点
+
+切点(Poincut)：具体定位的连接点：上面也说了，每个方法都可以称之为连接点，我们具体定位到某一个方法就成为切点。
+
+增强/通知(Advice)：
+  - 表示添加到切点的一段逻辑代码，就是你的aop要增强的代码，直白地说就是你要干啥，所以这个词其实翻译成增强比通知更准确
+  - Spring AOP提供了5种Advice类型给我们：前置、后置、返回、异常、环绕给我们使用
+
+织入(Weaving)：将增强/通知添加到目标类的具体连接点上的过程。
+
+引入/引介(Introduction)：引入/引介允许我们向现有的类添加新方法或属性。是一种特殊的增强！
+
+切面(Aspect)：切面由切点和增强/通知组成，它既包括了横切逻辑的定义、也包括了连接点的定义
+  
+AOP的实现原理：底层使用动态代理实现，根据被代理对象是否实现接口又分为jdk动态代理和cglib动态代理两种，如果被代理对象为singleton，推荐使用cglib，如果是prototype，推荐使用cglib，因为cglib创建慢但运行快，jdk动态代理则相反
+  
+srping对AOP的两种使用方法：
+  - 注解(常用这个)
+  - xml配置
+
+  
+
+
+
+
 
   
   
