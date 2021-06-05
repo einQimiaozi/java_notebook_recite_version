@@ -143,6 +143,8 @@ FactoryBean在创建Bean实例时会同时创建两个对象，一个是getObjec
 
 springBean就是spring容器生产的产品，只有被spring管理的对象，才可以叫做springBean
 
+有状态和无状态：有状态是指保存数据的对象，多线程环境下涉及线程安全问题，无状态是指不保存数据的bean，不涉及线程安全问题，一般MVC中的Dao层和Service都是无状态的，Service虽然存Dao实例但是Dao是无状态，Controller是有状态的
+
 1.用法：
   - 使用<bean id="..." class="..." / >定义
   - id：确定该Bean的唯一标识符，容器对Bean管理、访问、以及该Bean的依赖关系，都通过该属性完成。Bean的id属性在Spring容器中是唯一的
@@ -194,7 +196,7 @@ springBean就是spring容器生产的产品，只有被spring管理的对象，�
   
 ApplicationContext就是前面说的下上文管理器，也是一种spring容器
   
-ApplicationContext继承了BeanFactory的所有加强接口(注意不是直接继承BeanFactory)，所以它可以使用很多增强功能(国家化，父类BeanFactory之类的)，如果不是在极端情况下需要节约性能消耗，一般优先选择ApplicationContext
+ApplicationContext继承了BeanFactory的所有加强接口(注意不是直接继承BeanFactory)，所以它可以使用很多增强功能(国家化，父类BeanFactory之类的)，如果不是在极端情况下需要节约性能消耗，一般优先选择ApplicationContext安全
   
 ApplicationContext本身也是一个接口，有很多实现类，可以根据不同的场景使用，比如加载相对路径的xml和绝对路径的xml或者使用Config配置方式
   
@@ -250,7 +252,7 @@ public class UserDao {
 }
 ```
   
-Service类
+Service类安全
   
 ```java
 package com.Qimiaozi;
@@ -331,6 +333,55 @@ ApplicationContext和BeanFactory的区别
   - ApplicationContext会自动注册后置处理器方法，BeanFactory需要手动ddBeanPostProcessor()注册
   - ApplicationContext的singleton是预先实例化的，BeanFactory在第一次访问时才实例化
   
+## Bean装配
+  
+1.三种方法(常用注解+xml)安全
+  - 注解
+  - javaConfig
+  - xml
+  
+2.依赖注入方式
+  - 属性注入(使用无参构造函数实例化对象后调用setXXX方法注入)
+  - 构造函数参数注入
+  - 工厂模式注入(用的少)
+
+3.bean对象之间的关系类型
+  - ref：引用关系
+  - parent：继承关系
+  - depends-on：依赖关系
+  
+4.bean对象的scope：bean对象的成员的scope如果希望和bean对象不一样，直接在配置文件里设置成员的scope就可以
+  - singleton：单例，这个单例指的是实例的单例，不是class的单例，单例模式下的bean如果是无状态的，则不涉及线程安全，否则线程不安全
+  - prototype：多例，生成多个对象，没有线程安全问题
+  - request：用作单个http请求作用域范围内
+  - session：用作单个http session会话作用域范围内
+  
+5.装配方式
+  - no：非注解默认，不进行自动装配，通过显式设置ref属性来进行装配
+  - byName：通过参数名 自动装配，Spring容器在配置文件中发现bean的autowire属性被设置成byname，之后容器试图匹配、装配和该bean的属性具有相同名字的bean
+  - byType:注解默认方式，通过参数类型自动装配，Spring容器在配置文件中发现bean的autowire属性被设置成byType，之后容器试图匹配、装配和该bean的属性具有相同类型的bean。如果有多个bean符合条件，则抛出错误
+  - constructor：这个方式类似于byType， 但是要提供给构造器参数，如果没有确定的带参数的构造器参数类型，将会抛出异常
+  - autodetect：首先尝试使用constructor来自动装配，如果无法工作，则使用byType方式
+  
+## 常见注解
+  
+1.@Autowired：将依赖的Bean注入
+
+2.@Qualifier("String")：根据指定BeanName注入依赖(解决相同接口不同实现类时选择的问题)
+  
+3.@Resource(name = "String")：同上，java自带注解
+  
+4.@Component：用于将当前class声明为一个Bean对象，@Controller, @Service, @Repository都属于@Component，只不过针对Dao，Service，Controller进行了语义的细分
+  
+5.@Primary：设置该Bean为其接口的不同实现类中的首选Bean(解决相同接口不同实现类时选择的问题)
+  
+6.@Configuration：该注解会把被注解的类转换成一个用于配置spring的类，相当与使用java编程式做spring配置而不需要xml配置了，一般要搭配@Bean和@ComponentScan使用
+  
+7.@Bean：加在方法上的注解，方法返回的对象会被spring认为是一个bean对象，该方法在spring中只会被调用一次，之后生成的bean对象会被存入ioc容器中管理，类似与xml中的bean标签
+  
+8.@ComponentScan(url)：指定扫描某个路径下的全部package中符合条件的Bean，相当与<context:component-scan/>标签
+  
+9@import(xxx.class)：该注解会把指定的@Configuration的class导入当前类，使得当前类可以使用xxx.class中全部定义的@Bean，并且加载时机跟随当前类，如果xxx。class不是@Configuration，则会在当前类被处理时，将xxx.class自动注册为一个Bean
 
   
   
