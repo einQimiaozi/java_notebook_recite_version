@@ -17,5 +17,5 @@ MyBatis是JDBC的一种上层封装，简化了一些JDBC的链接，异常处�
 
 2.mybatis架构
 
-![https://upload-images.jianshu.io/upload_images/9033085-1b3892beac79af63.png?imageMogr2/auto-orient/strip|imageView2/2/format/webp]
+![mybatis](https://upload-images.jianshu.io/upload_images/9033085-1b3892beac79af63.png?imageMogr2/auto-orient/strip|imageView2/2/format/webp)
 
