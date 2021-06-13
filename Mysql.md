@@ -1,6 +1,6 @@
 ## Mysql结构
 
-![arch](https://pcsdata.baidu.com/thumbnail/6796fc7d5n371367992f74e65f993215?fid=1508469986-16051585-992196802664089&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-C5OsQiLx7Updel7eFlMcvUP7v58%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=1559525121&dp-callid=0&time=1618401600&size=c1600_u1600&quality=100&vuk=-&ft=video)
+![arch](https://github.com/einQimiaozi/java_notebook_recite_version/blob/main/img/arch.jpeg)
 
 查询缓存在mysql8.0之后被取消，一般认为数据库若不处于静态图状态则查询缓存命中率极低，不建议使用
 
@@ -82,7 +82,7 @@
 
 mysql索引采用b+tree结构，叶节点记录数据
 
-![索引结构](https://pcsdata.baidu.com/thumbnail/c30a6e71fp49af625326ad611dfd6f8f?fid=1508469986-16051585-282346189855871&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-masFNqg37SqgWK5mTrsyDx2ovP0%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=2888778553&dp-callid=0&time=1618027200&size=c1600_u1600&quality=100&vuk=-&ft=video)
+![索引结构](https://github.com/einQimiaozi/java_notebook_recite_version/blob/main/img/index.jpeg)
 
 b+树结构 层高:2-4  子节点数量：每个父节点下带该1200个 查询次数：最多三次  叶子节点这一层本身也是个链表 基本单位为page，page及其下级单位物理和逻辑空间都连续
 
@@ -136,7 +136,7 @@ b+树结构 层高:2-4  子节点数量：每个父节点下带该1200个 查询
 
 ## MVCC(多版本并发控制)
 
-![data](https://pcsdata.baidu.com/thumbnail/178077666o2f82b714509d6908289872?fid=1508469986-16051585-270984009239186&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-5qLgy4RCfuDknwcmcCOT39Ud2Ro%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=3210581287&dp-callid=0&time=1618030800&size=c1600_u1600&quality=100&vuk=-&ft=video)
+![data](https://github.com/einQimiaozi/java_notebook_recite_version/blob/main/img/data.jpeg)
 
 MVCC是维持一个数据的多个版本，使读写操作没有冲突的一个抽象概念，实际上在mysql中的实现就是快照读
 
