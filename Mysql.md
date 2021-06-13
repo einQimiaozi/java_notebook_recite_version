@@ -175,7 +175,9 @@ mvcc的实现原理：
     - up_limit_id: 创建当前read view 时“系统正处于活跃事务最小版本号”
     - creator_trx_id: 创建当前read view的事务版本号
   - 也就是说，如果一个事务的data_trx_id在up_limit_id和low_limit_id之间，则其必然会显示在静态视图中，即对当前事务可见
-  - 如果一个事务的data_trx_id不在trx_ids中，则说明该事务早就被提交，那么也必然可见
+  - 如果一个事务在up和low之间：
+    - data_trx_id不在trx_ids中，则说明该事务已经在生成静态视图前被提交，那么也必然可见
+    - data_trx_id在trx_ids中，则说明该事务到目前仍然活跃并未被提交，则不可见
 
 两阶段提交：指的是redolog和binlog如果同时存在，则做备份的时候先做redolog备份，然后等待binlog备份完成，在一起提交，这样的好处是防止binlog和redolog记录不一致导致回滚的时候出现幽灵数据
 
