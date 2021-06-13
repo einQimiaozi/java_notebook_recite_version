@@ -25,9 +25,9 @@
 
 插入节点时使用一个随机数作为插入层数，例如插入7时随机层数为4,则在1到4层都可以找到7这个节点，但是在其他层就看不到了
 
-![skip1](https://pcsdata.baidu.com/thumbnail/f9ddbe8bevb3c42a5a8b77029ec41dd7?fid=1508469986-16051585-1109070741150446&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-j%2FhERxeb47SE5InD1fitaHfwh1c%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=1961763278&dp-callid=0&time=1617973200&size=c1600_u1600&quality=100&vuk=-&ft=video)
+![skip1](https://github.com/einQimiaozi/java_notebook_recite_version/blob/main/img/skip1.jpeg)
 
-![skip2](https://pcsdata.baidu.com/thumbnail/2aa07a075l57a24ccb752339d9823bc9?fid=1508469986-16051585-466657229385980&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-l3WbK%2FyMUz%2FsLDcPPkiDN87n7jo%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=1961763278&dp-callid=0&time=1617973200&size=c1600_u1600&quality=100&vuk=-&ft=video)
+![skip2](https://github.com/einQimiaozi/java_notebook_recite_version/blob/main/img/skip2.jpeg)
 
 图片转自知乎
 
