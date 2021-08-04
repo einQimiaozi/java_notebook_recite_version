@@ -290,8 +290,8 @@ Full GC：全内存的GC，而由于Old GC之前必然会触发Young GC，所以
 | ParNew | O | X | O | X | O | X | O |
 | Parallel Scavenge | O | X | O | X | O | X | O |
 | Parallel Old | X | O | O | X | X | O | O |
-| CMS | X | O | O | X | O | X | O |
-| G1 | O | O | O | X | X | O | O |
+| CMS | X | O | O | O | X | X | O |
+| G1 | O | O | O | X | O | X | O |
 
 Paralled收集器的目标并不是单词快速GC，而是保证最大吞吐量(总时长较少即可)
 
