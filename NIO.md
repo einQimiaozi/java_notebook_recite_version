@@ -8,7 +8,8 @@
 
 特点：
   - 同步，不存在线程安全问题
-  - 阻塞，一次只能处理一个客户端请求
+  - 阻塞，一个线程一次只能处理一个客户端请求
+  - 消耗大，当客户端请求较多时，会开启大量线程等待客户端的读事件，如果读事件不到来则线程阻塞，所以会有大量线程等待造成cpu占用率巨大
 
 ## NIO
 
@@ -16,12 +17,13 @@
 
 ![nio](https://pcsdata.baidu.com/thumbnail/d9000ce1aq06a9782c479101c29f6e66?fid=1508469986-16051585-254446546933029&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-%2F%2BwD%2FY5%2Bo1hExLJI7%2B%2BgGczCwlQ%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=1401519158&dp-callid=0&time=1619085600&size=c1600_u1600&quality=100&vuk=-&ft=video)
 
-客户端请求通过Selector统一管理，Selector另外管理多个在其上注册的channel(双向通道，用于处理io，读写可同时进行，一般分为两类，网络io和文件io，io在缓冲区中操作，不直接写入到流中了)，Selector不断轮询channel集合，也就是不断轮询处理io，不阻塞，io没有就绪则跳过，一旦轮询到当前的channel处于就绪(空闲)状态，则分派任务给channel执行，所以服务端这边只需要提供一个线程管理Selector就可以，做到非阻塞同步通信
+客户端请求通过Selector统一管理，Selector另外管理多个在其上注册的channel(双向通道，用于处理io，读写可同时进行，一般分为两类，网络io和文件io，io在缓冲区中操作，不直接写入到流中了，channel可以理解成是bio中处理io的线程)，Selector不断轮询channel集合，也就是不断轮询处理io，不阻塞，io没有就绪则跳过，一旦轮询到当前的channel处于就绪(空闲)状态，则分派任务给channel执行，所以服务端这边只需要提供一个线程管理Selector就可以，做到非阻塞同步通信
 
 细节：
-  - 1.io操作使用一个Buffer数组作为缓冲区，不直接在stream中操作
+  - 1.io操作使用一个Buffer数组作为缓冲区，不直接在stream中操作(因为io线程不直接和客户端联系，通过selector分发，所以无法直接操作stream)
   - 2.io模型通过ScoketChannel过河ServerSocketChannel(一个阻塞一个非阻塞)来完成套接子通道的实现，不需要tcp三次握手建立链接
   - 3.NIO从其设计思想上来看，目的是为了尽可能多的处理请求，而不是加快处理请求的速度
+  - 4.nio中的selector一般由一个内核线程担任，所以速度更快
 
 适用场景：短连接，小数据
 
@@ -29,7 +31,7 @@
 
 非阻塞异步
 
-简单来说AIO这个东西是使用系统api提供的read和write实现的，它会返回一个回调函数，执行外读写之后会直接调用回调函数，其socket，channel和文件都是异步实现
+当进行读写操作时，只须直接调用API的read或write方法即可。这两种方法均为异步的，对于读操作而言，当有流可读取时，操作系统会将可读的流传入read方法的缓冲区，并通知应用程序；对于写操作而言，当操作系统将write方法传递的流写入完毕时，操作系统主动通知应用程序。  即可以理解为，read/write方法都是异步的，完成后会主动调用回调函数。
 
 ## select
 
