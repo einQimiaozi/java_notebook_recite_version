@@ -2,9 +2,9 @@
 
 阻塞同步通信模型，一个线程处理一个请求
 
-![bio](https://pcsdata.baidu.com/thumbnail/8a9257fd0k700cf216d47bfc4ad8737b?fid=1508469986-16051585-733691224096521&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-mxUIvv59fM0Lg%2BONaWLpAwPTQ7A%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=1275034477&dp-callid=0&time=1619085600&size=c1600_u1600&quality=100&vuk=-&ft=video)
+![bio](https://github.com/einQimiaozi/java_notebook_recite_version/blob/main/img/0034.png)
 
-客户端同过tcp三次握手和服务器连接，acceptor用来处理客户端的请求(io直接在stream中操作，由acceptor顺序处理)，io如果没有就绪将阻塞，io就绪后将每个请求分派给一个线程，线程顺序执行，因为频繁new Thread会造成性能问题，后期加入了线程池用于减少线程对象的创建
+客户端同过tcp三次握手和服务器连接，acceptor用来处理客户端的请求(io直接在stream中操作，由acceptor顺序处理)，io如果没有就绪将阻塞，io就绪后将每个请求分派给一个线程，即一个线程处理一个socket链接，线程顺序执行，因为频繁new Thread会造成线程数量爆炸，后期加入了线程池用于减少线程对象的创建
 
 特点：
   - 同步，不存在线程安全问题
@@ -15,15 +15,24 @@
 
 非阻塞同步通信模型，一个线程处理多个请求
 
-![nio](https://pcsdata.baidu.com/thumbnail/d9000ce1aq06a9782c479101c29f6e66?fid=1508469986-16051585-254446546933029&rt=pr&sign=FDTAER-yUdy3dSFZ0SVxtzShv1zcMqd-%2F%2BwD%2FY5%2Bo1hExLJI7%2B%2BgGczCwlQ%3D&expires=2h&chkv=0&chkbd=0&chkpc=&dp-logid=1401519158&dp-callid=0&time=1619085600&size=c1600_u1600&quality=100&vuk=-&ft=video)
+![nio](https://github.com/einQimiaozi/java_notebook_recite_version/blob/main/img/0035.png)
 
-客户端请求通过Selector统一管理，Selector另外管理多个在其上注册的channel(双向通道，用于处理io，读写可同时进行，一般分为两类，网络io和文件io，io在缓冲区中操作，不直接写入到流中了，channel可以理解成是bio中处理io的线程)，Selector不断轮询channel集合，也就是不断轮询处理io，不阻塞，io没有就绪则跳过，一旦轮询到当前的channel处于就绪(空闲)状态，则分派任务给channel执行，所以服务端这边只需要提供一个线程管理Selector就可以，做到非阻塞同步通信
+通过一个用户线程轮询多个channel，一个channel和一个socket连接绑定，channel是一个双工数据传输通道(和stream差不多)，不存储数据，只搬运数据，所以需要配合buffer使用，channel有数据则会放入buffer并交给一个线程进行处理，如果没有数据也不会阻塞，本质上在io部分依然是单线程
+
+缺点：
+  - 建立连接请求后客户端长时间没有数据到来会使得服务器端一直处于轮询状态造成cpu空转
+
+## io多路复用
+
+非阻塞同步通信模型，将线程进行拆分
+
+![duiolufuyong](https://github.com/einQimiaozi/java_notebook_recite_version/blob/main/img/0036.png)
+
+客户端请求通过Selector统一管理，事件驱动，即如果channel没有读写事件，那么Selector会阻塞，一旦任何一个或多个channel发生事件，Selector才会释放阻塞并处理该事件，所以可以避免cpu空转，是一种高效的nio模型
 
 细节：
-  - 1.io操作使用一个Buffer数组作为缓冲区，不直接在stream中操作(因为io线程不直接和客户端联系，通过selector分发，所以无法直接操作stream)
-  - 2.io模型通过ScoketChannel过河ServerSocketChannel(一个阻塞一个非阻塞)来完成套接子通道的实现，不需要tcp三次握手建立链接
-  - 3.NIO从其设计思想上来看，目的是为了尽可能多的处理请求，而不是加快处理请求的速度
-  - 4.nio中的selector一般由一个内核线程担任，所以速度更快
+  - 1.NIO从其设计思想上来看，目的是为了尽可能多的处理请求，而不是加快处理请求的速度
+  - 2.nio中的selector一般由一个内核线程担任，所以速度更快
 
 适用场景：短连接，小数据
 
@@ -31,7 +40,9 @@
 
 非阻塞异步
 
-当进行读写操作时，只须直接调用API的read或write方法即可。这两种方法均为异步的，对于读操作而言，当有流可读取时，操作系统会将可读的流传入read方法的缓冲区，并通知应用程序；对于写操作而言，当操作系统将write方法传递的流写入完毕时，操作系统主动通知应用程序。  即可以理解为，read/write方法都是异步的，完成后会主动调用回调函数。
+![aio](https://github.com/einQimiaozi/java_notebook_recite_version/blob/main/img/0037.png)
+
+当进行读写操作时，只须直接调用API的read或write方法即可。这两种方法均为异步的，对于读操作而言，当有流可读取时，操作系统会将可读的流传入read方法的缓冲区，并通知应用程序；对于写操作而言，当操作系统将write方法传递的流写入完毕时，操作系统主动通知应用程序。  即可以理解为，read/write方法都是异步的，完成后会主动调用回调函数，所以aio完成一次事件，需要用到两个线程，一个用于执行用户的read/write方法，另一个负责处理事件并执行回调函数将结果主动交回给用户线程
 
 ## select
 
