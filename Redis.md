@@ -227,7 +227,7 @@ redis支持一个master node下配置多个slave node，采用异步方式复制
 
 2.主从复制的原理
   - slave初次连接master时会做全量复制
-  - master通过后台线程写入rdb文件，并将写入rdb期间的新命令缓存一份到内存中,这份内存叫做backlog，最后将rdb文件发送给slave，这里master支持无磁盘化复制，即rdb不写入磁盘，直接发送给slave
+  - master通过后台线程写入rdb文件，并将写入rdb期间的新命令缓存一份到从服务器的内存中,这份内存叫做backlog，最后将rdb文件发送给slave，这里master支持无磁盘化复制，即rdb不写入磁盘，直接发送给slave
   - slave将rdb先写入磁盘，然后通过加载rdb文件到内存和backlog复制master
   - 主从复制是支持断点续传的
   - slave的过期key处理是由master发送del命令处理的，slave自己本身不处理过期key
