@@ -4,7 +4,7 @@
 
 ![bio](https://github.com/einQimiaozi/java_notebook_recite_version/blob/main/img/0034.png)
 
-客户端同过tcp三次握手和服务器连接，acceptor用来处理客户端的请求(io直接在stream中操作，由acceptor顺序处理)，io如果没有就绪将阻塞，io就绪后将每个请求分派给一个线程，即一个线程处理一个socket链接，线程顺序执行，因为频繁new Thread会造成线程数量爆炸，后期加入了线程池用于减少线程对象的创建
+客户端同过tcp三次握手和服务器连接，acceptor用来处理客户端的请求(io直接在stream中操作，由acceptor顺序处理)，io如果没有就绪将阻塞，所以acceptor每次只能处理一个连接并且当这个连接执行时间过长或者阻塞时整个通信模型也将阻塞，io就绪后将每个请求分派给一个线程，可以通过多线程改善阻塞问题，即一个线程处理一个socket链接，线程顺序执行，因为频繁new Thread会造成线程数量爆炸，而且当某个socket套接字建立连接后长期没有io事件就绪则该线程会长时间空闲，所以后期加入了线程池用于减少线程对象的创建
 
 特点：
   - 同步，不存在线程安全问题
