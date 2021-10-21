@@ -236,7 +236,7 @@ redis支持一个master node下配置多个slave node，采用异步方式复制
   - run_id:每台服务器每次服务的身份id，也就是说同一台服务器如果启动两次不同的服务，那么run_id不同，一般用于区分master，因为master重启后的数据可能会被清空，这样slave就没有必要也不能进行断点续传和复制(这也是为什么不能通过ip地址判断)
   - master和slave都维护一个offset和run_id，offset用于记录当前复制的位置，和backllog搭配
   - 当master和slave重连后，slave先判断自己的run id和master的是否相同
-  - 之后判断offset的位置在backlog中是否还有效，如果有效则重新从该位置开始续传
+  - 之后判断offset的位置在backlog中是否还有效，如果有效则重新从该位置开始续传(backlog是一个环状日志，如果主节点写入的内容超过backlog大小则会从头覆盖写入，当断网恢复之后，如果主节点写入了过多的数据导致从节点未复制的数据已经被覆盖了，那么offset就会失效，这就是offset失效的情况)
   - 如果上面两步任何一步不满足，就重新做全量备份
 
 ## 哨兵集群
