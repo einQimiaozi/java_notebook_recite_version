@@ -20,7 +20,7 @@ zookeeper集群由一个leader和多个follower组成
 
 2.对比每个节点的myid(在zookeeper的data中可以配置)，myid大的节点可以将myid小的节点的票抢走
 
-3.票数最多的节点当选，leader选举出来后再有新节点加入也不再选举
+3.票数最多的且超过半数投票的节点当选，leader选举出来后再有新节点加入也不再选举
 
 4.如果所有节点票数都不超过节点数量的一半，则节点进入looking状态等待新节点加入
 
@@ -81,6 +81,8 @@ zookeeper中除了myid还有任期和事务id，任期是一个leader当选后+1
 
 ## 节点类型
 
+zookeeper中的所有数据视为节点，也叫znode，zookeeper保证znode的插入是原子性的
+
 1.无编号持久型：znode设置后客户端和服务器断开连接该节点的数据也不会被删除，不能重复创建
 
 2.有编号持久性：znode设置后客户端和服务器断开连接该节点的数据也不会被删除，可以重复创建，每次创建后会在节点名称后加一个自增编号，改编号不会自减
@@ -104,4 +106,39 @@ zookeeper通过监听器监听znode状态，监听器默认设置一次后只能
 如果请求发送到leader：leader会将请求转发给follower，follower写入成功会ackleader，超过半数follower应答，则leader认为写入成功，ack给客户端
 
 如果请求发送到follower，follower会将请求转发给leader，leader负责转发给其他follower，超过半数follower应答，则leader将写入成功ack给和客户端通信的follower，由该follower应答客户端
+
+## 分布式锁
+
+分布式锁是zookeeper的典型应用，因为zookeeper对znode的操作原生支持原子性，可临时化节点并自动编号
+
+  - 1.首个连接zookeeper服务器的客户端创建一个rootlock的znode作为锁，在root下尝试创建znode001作为锁
+  - 2.其他客户端连接到zookeeper服务器后获取rootlock下的全部children并创建一个znode00x，如果自己创建的znode00x是最小的节点，则成功获取锁
+  - 3.否则客户端阻塞(这里可以使用你语言里自带的sync的各种方法，根据你的业务逻辑选择)并监听znode00x-1(它的前一个znode)
+  - 4.znode00x-1释放后znodex就会成为最小节点，此时获取rootlock成功
+  - 5.处理完业务逻辑后delete掉znode00x完成锁释放
+
+## zookeeper常见面试题
+
+6.1 选举机制：半数机制，超过半数的投票通过，即通过。
+
+（1）第一次启动选举规则：投票过半数时，服务器 id 大的胜出
+
+（2）第二次启动选举规则：
+  - ①EPOCH 大的直接胜出
+  - ②EPOCH 相同，事务 id 大的胜出
+  - ③事务 id 相同，服务器 id 大的胜出
+  - 
+6.2 生产集群安装多少 zk 合适？安装奇数台。
+
+生产经验：
+  - ⚫ 10 台服务器：3 台 zk；
+  - ⚫ 20 台服务器：5 台 zk；
+  - ⚫ 100 台服务器：11 台 zk；
+  - ⚫ 200 台服务器：11 台 zk
+
+服务器台数多：好处，提高可靠性；坏处：提高通信延时
+
+6.3 常用命令：ls、get、create、delete
+
+
 
