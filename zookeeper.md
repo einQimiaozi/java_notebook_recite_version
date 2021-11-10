@@ -99,3 +99,9 @@ zookeeper通过监听器监听znode状态，监听器默认设置一次后只能
 
 3.zookeeper监听到事件发生变化会通过process方法回调给listenser，listenser将事件变化返回给客户端完成监听
 
+## zookeeper请求
+
+如果请求发送到leader：leader会将请求转发给follower，follower写入成功会ackleader，超过半数follower应答，则leader认为写入成功，ack给客户端
+
+如果请求发送到follower，follower会将请求转发给leader，leader负责转发给其他follower，超过半数follower应答，则leader将写入成功ack给和客户端通信的follower，由该follower应答客户端
+
