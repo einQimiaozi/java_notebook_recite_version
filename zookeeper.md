@@ -117,6 +117,21 @@ zookeeper通过监听器监听znode状态，监听器默认设置一次后只能
   - 4.znode00x-1释放后znodex就会成为最小节点，此时获取rootlock成功
   - 5.处理完业务逻辑后delete掉znode00x完成锁释放
 
+## paoxs算法
+
+paoxs保证zookeeper满足cap理论中的cp
+
+一个Paxos系统中，首先将所有节点划分为Proposer（提议者），Acceptor（接受者），和Learner（学习者）。（注意：每个节点都可以身兼数职）
+
+  - 1.Proposer向多个Acceptor发出Propose请求承诺，每个承诺有一个全局递增唯一id，一个Acceptor如果接收过承诺3,那么它就不能接受承诺1或承诺2,只能接收承诺3或3以上的id
+  - 2.Proposer收到多数Acceptor的承诺后，向Acceptor发出提案(具体要执行啥，过半通过决议)，每个提案也有全局递增唯一id，如果Acceptor接受了提案3,那么它就不能接受提案1，提案2和提案3,只能接收提案4及更大的提案id，Acceptor接收提案后，会将提案id和提案value作为一个kv对持久化到自己的磁盘里
+  - 3.Acceptor如果收到多个Proposer的请求承诺，并且id递增，那么会覆盖之前的承诺，提案也是如此，可以理解成毁约，如果Proposer的承诺被毁约并且此时承诺数小于paoxs中总节点数的一半，Proposer会重新向未接收自己承诺的Acceptor发起请求承诺
+  - 4.Learner执行决议通过的提案
+  - 5.如果paoxs内的Proposer，Acceptor数量总和为奇数(比如两个Proposer，三个Acceptor)，那么有可能形成死锁
+    - Acceptor1承诺Proposer1，Acceptor2承诺Proposer2，此时Acceptor3会不断接收Proposer1和Proposer2的承诺，然后不断毁约，Proposer1和Proposer2会不断重新发起请求承诺，造成系统死锁
+
+## 
+
 ## zookeeper常见面试题
 
 6.1 选举机制：半数机制，超过半数的投票通过，即通过。
