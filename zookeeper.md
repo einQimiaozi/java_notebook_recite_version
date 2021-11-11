@@ -130,7 +130,39 @@ paoxs保证zookeeper满足cap理论中的cp
   - 5.如果paoxs内的Proposer，Acceptor数量总和为奇数(比如两个Proposer，三个Acceptor)，那么有可能形成死锁
     - Acceptor1承诺Proposer1，Acceptor2承诺Proposer2，此时Acceptor3会不断接收Proposer1和Proposer2的承诺，然后不断毁约，Proposer1和Proposer2会不断重新发起请求承诺，造成系统死锁
 
-## 
+## zab协议
+
+zab协议是一种类似paoxs的算法，也是zookeeper底层实现分布式的算法
+
+ZAB协议针对事务请求的处理过程类似于一个两阶段提交过程
+
+（1）广播事务阶段
+
+（2）广播提交阶段
+
+广播事务阶段：
+  - （1）客户端发起一个写操作请求
+  - （2）Leader服务器将客户端的请求转化为事务Proposal 提案，同时为每个Proposal 分配一个全局的ID，即zxid
+  - （3）Leader服务器为每个Follower服务器分配一个单独的队列，然后将需要广播的 Proposal依次放到队列中去，并且根据FIFO策略进行消息发送。
+  - （4）Follower接收到Proposal后，会首先将其以事务日志的方式写入本地磁盘中，写入成功后向Leader反馈一个Ack响应消息。
+  - （5）Leader接收到超过半数以上Follower的Ack响应消息后，即认为消息发送成功，可以发送commit消息。
+
+广播提交阶段
+
+  - （1）Leader向所有Follower广播commit消息，同时自身也会完成事务提交。Follower 接收到commit消息后，会将上一条事务提交。
+  - （2）Zookeeper采用Zab协议的核心，就是只要有一台服务器提交了Proposal，就要确保所有的服务器最终都能正确提交Proposal
+
+leader崩溃恢复
+
+1.重新选举：
+  - 新选举出来的Leader不能包含未提交的Proposal
+  - 新选举的Leader节点中含有最大的zxid
+
+2.数据恢复
+  - 新leader会首先确认事务日志中的所有的Proposal 是否已经被集群中过半的服务器Commit
+  - leader会ping所有follower，保证Follower将所有尚未同步的事务Proposal都从Leader服务器上同步过，并且应用到内存数据中以后，Leader才会把该Follower加入到真正可用的Follower列表中
+
+总结：leader崩溃恢复保证所有已经提交的提案必须先被follower执行完毕，所有前任leader提交失败的提案全部被抛弃
 
 ## zookeeper常见面试题
 
